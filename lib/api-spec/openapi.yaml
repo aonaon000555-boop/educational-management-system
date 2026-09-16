@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Core API for the Arabic multi-center educational ERP
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Initial dashboard read models
+  - name: centers
+    description: Multi-center foundation
+  - name: access
+    description: Roles and data scope foundation
 paths:
   /healthz:
     get:
@@ -24,6 +30,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get the initial dashboard summary
+      responses:
+        "200":
+          description: Initial dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /centers:
+    get:
+      operationId: listCenters
+      tags: [centers]
+      summary: List educational centers
+      responses:
+        "200":
+          description: Educational centers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Center"
+  /access/context:
+    get:
+      operationId: getAccessContext
+      tags: [access]
+      summary: Get the current access context
+      responses:
+        "200":
+          description: Roles and data scope context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessContext"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +77,58 @@ components:
           type: string
       required:
         - status
+    Center:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        city:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+      required: [id, name, code, city, status]
+    DashboardSummary:
+      type: object
+      properties:
+        centersCount:
+          type: integer
+        activeCentersCount:
+          type: integer
+        usersCount:
+          type: integer
+        rolesCount:
+          type: integer
+        auditEventsCount:
+          type: integer
+        setupStatus:
+          type: string
+          enum: [foundation, ready]
+      required:
+        - centersCount
+        - activeCentersCount
+        - usersCount
+        - rolesCount
+        - auditEventsCount
+        - setupStatus
+    AccessContext:
+      type: object
+      properties:
+        authenticated:
+          type: boolean
+        role:
+          type: ["string", "null"]
+        permissions:
+          type: array
+          items:
+            type: string
+        centerIds:
+          type: array
+          items:
+            type: integer
+      required: [authenticated, role, permissions, centerIds]
 

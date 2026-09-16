@@ -1,6 +1,6 @@
-# [Project name]
+# نظام الإدارة التعليمية
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+منصة عربية مركزية لإدارة المدارس والمراكز التعليمية، بدأت بأساس مؤسسي قابل للتوسع متعدد المراكز والصلاحيات.
 
 ## Run & Operate
 
@@ -22,23 +22,33 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/educational-erp` — تطبيق React/Vite العربي وواجهة RTL (المسارات `/` و`/login`)
+- `artifacts/api-server` — خدمة Express تحت `/api`
+- `lib/api-spec/openapi.yaml` — المصدر الوحيد لعقود الـAPI
+- `lib/db/src/schema` — جداول PostgreSQL الأساسية
+- `artifacts/educational-erp/src/index.css` — ثيم الواجهة واتجاهاتها البصرية
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- الواجهة مبنية على React/Vite ضمن monorepo الحالي في Replit بدل إدخال Next.js لتقليل التعقيد التشغيلي في هذه المرحلة.
+- عقود الـAPI تبدأ من OpenAPI ثم تُولّد منها hooks للواجهة وZod للتحقق في الخادم.
+- PostgreSQL مع Drizzle هو مصدر البيانات؛ لا توجد SQLite أو طبقة بيانات بديلة.
+- تأسيس النطاق يقتصر على المراكز والأدوار والمستخدمين ونطاقات الوصول وسجل العمليات قبل إضافة الوحدات الأكاديمية.
+- واجهة تسجيل الدخول تأسيسية بصريًا فقط إلى حين ربط مزود هوية مؤسسي؛ لا توجد مصادقة محلية مخصصة.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+المرحلة الحالية تعرض لوحة مركزية عربية لمتابعة جاهزية النظام والمراكز التعليمية، وتمهد لبناء وحدات الطلاب والموظفين والعمليات لاحقًا.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- النظام باللغة العربية وباتجاه RTL.
+- التطوير مرحلي: لا تُبنى الاختبارات أو المالية أو السكن قبل اكتمال Core النظام.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- بعد تعديل `lib/api-spec/openapi.yaml` يجب تشغيل codegen قبل استخدام hooks الجديدة.
+- بيئة تشغيل الواجهة توفر `PORT` و`BASE_PATH` عبر workflow؛ لا تشغّل Vite مباشرة من الجذر.
 
 ## Pointers
 

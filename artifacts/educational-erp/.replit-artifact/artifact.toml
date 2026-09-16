@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "نظام الإدارة التعليمية"
+description = "منصة عربية مركزية لإدارة المدارس والمراكز التعليمية، تبدأ بأساس مؤسسي قابل للتوسع مع لوحة تحكم RTL وبنية متعددة المراكز والصلاحيات."
+version = "1.0.0"
+id = "artifacts/educational-erp"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22037
+
+[services.development]
+run = "pnpm --filter @workspace/educational-erp run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/educational-erp", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/educational-erp/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22037"
+BASE_PATH = "/"
