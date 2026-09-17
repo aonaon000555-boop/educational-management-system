@@ -3,6 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Building2, ChevronLeft, ClipboardList, LayoutDashboard, LogOut, Menu, Settings2, ShieldCheck, X } from 'lucide-react';
 import { BrandMark } from '@/components/brand-mark';
 import { useGetAccessContext, getGetAccessContextQueryKey, useHealthCheck, getHealthCheckQueryKey } from '@workspace/api-client-react';
+import { useClerk, useUser } from '@clerk/react';
 
 const navItems = [
   { label: 'نظرة عامة', href: '/', icon: LayoutDashboard, active: true },
@@ -14,7 +15,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: access } = useGetAccessContext({ query: { queryKey: getGetAccessContextQueryKey(), retry: 1 } });
   const { data: health } = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), retry: 1, staleTime: 30_000 } });
-  const roleLabel = access?.role || 'مسؤول النظام';
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const roleLabel = access?.role === 'system_admin' ? 'مسؤول النظام' : access?.role || 'مستخدم مؤسسي';
   const isHealthy = health?.status === 'ok' || health?.status === 'healthy';
 
   return (
@@ -65,7 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="truncate text-sm font-semibold">{roleLabel}</p>
               <p className="mt-0.5 text-[11px] text-[hsl(var(--sidebar-foreground)/.52)]">وصول مؤسسي</p>
             </div>
-            <LogOut size={15} className="mr-auto text-[hsl(var(--sidebar-foreground)/.42)]" />
+            <button type="button" aria-label="تسجيل الخروج" onClick={() => void signOut({ redirectUrl: '/login' })} className="mr-auto rounded-lg p-1 text-[hsl(var(--sidebar-foreground)/.42)] transition hover:bg-[hsl(var(--sidebar-foreground)/.10)] hover:text-[hsl(var(--sidebar-foreground))]"><LogOut size={15} /></button>
           </div>
         </div>
       </aside>
@@ -83,7 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className={`h-2 w-2 rounded-full ${isHealthy ? 'bg-[hsl(var(--chart-4))]' : 'bg-[hsl(var(--muted-foreground))]'}`} />
               <span>{isHealthy ? 'الخدمات تعمل' : 'حالة النظام'}</span>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-xs font-bold text-[hsl(var(--primary-foreground))]" aria-label="حساب المستخدم">م</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-xs font-bold text-[hsl(var(--primary-foreground))]" aria-label="حساب المستخدم">{user?.firstName?.slice(0, 1) ?? 'م'}</div>
           </div>
         </header>
         <div className="mx-auto max-w-[1440px] px-5 py-7 md:px-8 md:py-9">{children}</div>

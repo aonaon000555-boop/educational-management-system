@@ -1,15 +1,16 @@
 import { type FormEvent, useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { BrandMark } from '@/components/brand-mark';
 
 export default function Login() {
+  const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState('');
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice('سيتم تفعيل تسجيل الدخول عند اكتمال ربط خدمة الهوية المؤسسية.');
+    setLocation('/sign-in');
   }
 
   return (

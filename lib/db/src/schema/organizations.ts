@@ -1,14 +1,11 @@
 import { createInsertSchema } from "drizzle-zod";
-import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod/v4";
-import { organizationsTable } from "./organizations";
 
-export const centersTable = pgTable("centers", {
+export const organizationsTable = pgTable("organizations", {
   id: serial("id").primaryKey(),
-  organizationId: integer("organization_id").notNull().references(() => organizationsTable.id),
   name: text("name").notNull(),
   code: text("code").notNull().unique(),
-  city: text("city").notNull(),
   status: text("status").notNull().default("active"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
@@ -18,11 +15,11 @@ export const centersTable = pgTable("centers", {
   deletedBy: text("deleted_by"),
 });
 
-export const insertCenterSchema = createInsertSchema(centersTable).omit({
+export const insertOrganizationSchema = createInsertSchema(organizationsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
 });
-export type InsertCenter = z.infer<typeof insertCenterSchema>;
-export type Center = typeof centersTable.$inferSelect;
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Organization = typeof organizationsTable.$inferSelect;

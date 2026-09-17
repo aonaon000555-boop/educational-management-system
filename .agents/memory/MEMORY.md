@@ -1,0 +1,2 @@
+- [Clerk/local authorization](clerk-local-bootstrap.md) — Clerk authenticates; PostgreSQL owns local users, roles, permissions, and development bootstrap.
+- [PostgreSQL migration workflow](postgres-migration-workflow.md) — current development DB uses push; generated SQL migrations require history-aware rollout on populated DBs.
