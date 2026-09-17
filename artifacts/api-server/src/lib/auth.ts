@@ -32,6 +32,17 @@ function getClerkDisplayName(clerkUser: { firstName: string | null; lastName: st
   return name || email;
 }
 
+function isConfiguredDevelopmentSuperAdmin(clerkUserId: string, email: string): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  const configuredUserId = process.env.DEV_SUPER_ADMIN_CLERK_USER_ID?.trim();
+  const configuredEmail = process.env.DEV_SUPER_ADMIN_EMAIL?.trim().toLowerCase();
+  return (configuredUserId !== undefined && configuredUserId.length > 0 && configuredUserId === clerkUserId)
+    || (configuredEmail !== undefined && configuredEmail.length > 0 && configuredEmail === email.toLowerCase());
+}
+
 export async function getOrProvisionLocalUser(req: Request): Promise<User> {
   const clerkUserId = getAuth(req).userId;
   if (!clerkUserId) {
@@ -77,17 +88,13 @@ export async function getOrProvisionLocalUser(req: Request): Promise<User> {
       return;
     }
 
-    const [{ count: userCount }] = await tx
-      .select({ count: sql<number>`count(*)::int` })
-      .from(usersTable)
-      .where(sql`${usersTable.deletedAt} IS NULL`);
     const [systemAdminRole] = await tx
       .select()
       .from(rolesTable)
       .where(eq(rolesTable.code, "system_admin"))
       .limit(1);
 
-    provisionedAsSuperAdmin = process.env.NODE_ENV !== "production" && userCount === 0;
+    provisionedAsSuperAdmin = isConfiguredDevelopmentSuperAdmin(clerkUserId, email);
     const [insertedUser] = await tx
       .insert(usersTable)
       .values({

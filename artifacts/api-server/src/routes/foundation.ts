@@ -7,14 +7,21 @@ import { getUserCenterScope, requirePermission } from "../lib/authorization";
 
 const router: IRouter = Router();
 
-router.get("/dashboard/summary", requireLocalUser, requirePermission("organization.read"), async (_req, res): Promise<void> => {
+router.get("/dashboard/summary", requireLocalUser, requirePermission("organization.view"), async (_req, res): Promise<void> => {
+  const user = res.locals.localUser as User;
+  const scope = await getUserCenterScope(user.id);
+  const centerScope = scope.organizationWide
+    ? sql`${centersTable.organizationId} = ${user.organizationId}`
+    : scope.centerIds.length > 0
+      ? sql`${centersTable.organizationId} = ${user.organizationId} AND ${centersTable.id} IN (${sql.join(scope.centerIds.map((id) => sql`${id}`), sql`, `)})`
+      : sql`false`;
   const [centersCount, activeCentersCount, usersCount, rolesCount, auditEventsCount] =
     await Promise.all([
-      db.select({ count: sql<number>`count(*)::int` }).from(centersTable),
-      db.select({ count: sql<number>`count(*)::int` }).from(centersTable).where(sql`${centersTable.status} = 'active'`),
-      db.select({ count: sql<number>`count(*)::int` }).from(usersTable),
-      db.select({ count: sql<number>`count(*)::int` }).from(rolesTable),
-      db.select({ count: sql<number>`count(*)::int` }).from(auditLogsTable),
+      db.select({ count: sql<number>`count(*)::int` }).from(centersTable).where(sql`${centerScope} AND ${centersTable.deletedAt} IS NULL`),
+      db.select({ count: sql<number>`count(*)::int` }).from(centersTable).where(sql`${centerScope} AND ${centersTable.status} = 'active' AND ${centersTable.deletedAt} IS NULL`),
+      db.select({ count: sql<number>`count(*)::int` }).from(usersTable).where(sql`${usersTable.organizationId} = ${user.organizationId} AND ${usersTable.deletedAt} IS NULL`),
+      db.select({ count: sql<number>`count(*)::int` }).from(rolesTable).where(sql`${rolesTable.organizationId} = ${user.organizationId} OR ${rolesTable.organizationId} IS NULL`),
+      db.select({ count: sql<number>`count(*)::int` }).from(auditLogsTable).where(sql`${auditLogsTable.organizationId} = ${user.organizationId}`),
     ]);
 
   const data = GetDashboardSummaryResponse.parse({
@@ -28,7 +35,7 @@ router.get("/dashboard/summary", requireLocalUser, requirePermission("organizati
   res.json(data);
 });
 
-router.get("/centers", requireLocalUser, requirePermission("center.read"), async (_req, res): Promise<void> => {
+router.get("/centers", requireLocalUser, requirePermission("centers.view"), async (_req, res): Promise<void> => {
   const user = res.locals.localUser as User;
   const scope = await getUserCenterScope(user.id);
   if (!scope.organizationWide && scope.centerIds.length === 0) {
